@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Transfer Test</title>
+<style>
+:root{--ink:#1F2328;--red:#A6192E;--gold:#F2B22D;--line:#DDD9D2;--soft:#FAF8F4;--gray:#5A5F66;--good:#1E6B45;--bad:#A6192E;}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font-family:Georgia,'Times New Roman',serif;font-size:17px;line-height:1.55}
+.wrap{max-width:940px;margin:0 auto;padding:0 18px 60px}
+header{border-top:8px solid var(--red);padding:22px 0 8px}
+h1{font-family:Arial,Helvetica,sans-serif;font-size:34px;margin:0 0 6px}
+h2{font-family:Arial,Helvetica,sans-serif;font-size:23px;margin:0 0 12px}
+h3{font-family:Arial,Helvetica,sans-serif;font-size:17px;margin:18px 0 8px}
+.kicker{font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin:0 0 6px}
+.sub{color:var(--gray);margin:0 0 4px}
+section.step{border:1px solid var(--line);border-left:6px solid var(--red);padding:20px 22px;margin:22px 0;background:#fff}
+section.step.locked{border-left-color:var(--line);background:var(--soft);color:var(--gray)}
+section.step.locked .body{display:none}
+.lockmsg{display:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;margin:0}
+section.step.locked .lockmsg{display:block}
+.num{display:inline-block;width:32px;height:32px;line-height:32px;border-radius:50%;background:var(--red);color:#fff;text-align:center;font-size:16px;margin-right:10px}
+.locked .num{background:#B9B5AD}
+.next{background:var(--ink);color:#fff;padding:12px 16px;margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:15px}
+.next b{color:var(--gold);letter-spacing:1px;text-transform:uppercase;font-size:12px;margin-right:8px}
+button{font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;padding:11px 18px;border:0;border-radius:4px;background:var(--red);color:#fff;cursor:pointer}
+button.alt{background:#fff;color:var(--ink);border:1px solid var(--ink);font-weight:normal;font-size:14px;padding:8px 12px}
+button:disabled{background:#B9B5AD;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+input[type=text],select{font-size:16px;padding:8px 10px;border:1px solid #8C8880;border-radius:4px;font-family:Arial,Helvetica,sans-serif}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:10px 0 16px}
+.card{border:2px solid var(--line);padding:12px 14px;cursor:pointer;background:#fff;font-family:Arial,Helvetica,sans-serif;font-size:15px}
+.card.sel{border-color:var(--red);background:#FCF1F2}
+.card strong{display:block;font-size:17px;margin-bottom:4px}
+table{border-collapse:collapse;width:100%;font-family:Arial,Helvetica,sans-serif;font-size:14.5px;margin:8px 0 14px}
+th{background:var(--ink);color:#fff;text-align:left;padding:8px 10px;vertical-align:bottom}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel{border:1px solid var(--line);background:var(--soft);padding:14px 16px}
+.panel h3{margin-top:0}
+.big{font-family:Arial,Helvetica,sans-serif;font-size:34px;font-weight:bold;line-height:1.1}
+.lab{font-family:Arial,Helvetica,sans-serif;font-size:12.5px;letter-spacing:1px;text-transform:uppercase;color:var(--gray)}
+.stat{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 16px;margin-top:10px}
+.stat div b{font-family:Arial,Helvetica,sans-serif;font-size:20px;display:block}
+.bar{height:14px;background:var(--ink);display:inline-block;vertical-align:middle}
+.note{font-size:15px;color:var(--gray)}
+.msg{padding:10px 14px;margin:10px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px}
+.msg.ok{background:#E8F3EC;border-left:5px solid var(--good)}
+.msg.no{background:#FBEAEC;border-left:5px solid var(--bad)}
+.fix{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px}
+.fix fieldset{border:1px solid var(--line);padding:10px 14px;margin:0}
+.fix legend{font-family:Arial,Helvetica,sans-serif;font-weight:bold;font-size:15px;padding:0 6px}
+.fix label{display:block;font-family:Arial,Helvetica,sans-serif;font-size:15px;margin:5px 0}
+.pts{color:var(--red);font-weight:bold}
+.budget{font-family:Arial,Helvetica,sans-serif;font-size:16px;margin:12px 0}
+.budget.over{color:var(--bad);font-weight:bold}
+pre{white-space:pre-wrap;background:var(--soft);border:1px solid var(--line);padding:12px 14px;font-family:Consolas,'Courier New',monospace;font-size:14px;line-height:1.5}
+.scroll{overflow-x:auto}
+footer{color:var(--gray);font-size:14.5px;border-top:1px solid var(--line);padding-top:14px;margin-top:30px}
+@media(max-width:720px){.cards,.two,.fix{grid-template-columns:1fr}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="kicker">An AI deployment exercise</p>
+  <h1>The Transfer Test</h1>
+  <p class="sub">A model that works at one site is moved to another. Find out what breaks, fix what you can afford, and decide whether to use it.</p>
+  <p class="sub" style="font-size:14.5px">Built by Cynthia McGinnis. All data are simulated.</p>
+</header>
+
+<section class="step" id="s1">
+  <h2><span class="num">1</span>Set up</h2>
+  <div class="body">
+    <p><label for="nm"><strong>Your last name.</strong> It sets your data. A different name gives different records.</label><br>
+    <input type="text" id="nm" autocomplete="off" maxlength="40"></p>
+    <p style="margin-bottom:4px"><strong>Choose one setting.</strong></p>
+    <div class="cards" id="cards"></div>
+    <button id="startBtn" disabled>Start</button>
+    <div id="scenario"></div>
+  </div>
+</section>
+
+<section class="step locked" id="s2">
+  <h2><span class="num">2</span>Test the model where it was built</h2>
+  <p class="lockmsg">Locked. It opens when you click Start in Step 1.</p>
+  <div class="body">
+    <p>The vendor trained the model on 800 records from Site A. You have 400 more Site A records that the model has never seen. Score it on those.</p>
+    <button id="testA">Test the model at Site A</button>
+    <div id="resA"></div>
+  </div>
+</section>
+
+<section class="step locked" id="s3">
+  <h2><span class="num">3</span>Move the model to your site</h2>
+  <p class="lockmsg">Locked. It opens after you test the model at Site A in Step 2.</p>
+  <div class="body">
+    <p>Now run the same model, unchanged, on 400 records from Site B. This is one month of cases at your site.</p>
+    <button id="testB">Move the model to Site B</button>
+    <div id="resB"></div>
+  </div>
+</section>
+
+<section class="step locked" id="s4">
+  <h2><span class="num">4</span>Look inside</h2>
+  <p class="lockmsg">Locked. It opens after you move the model to Site B in Step 3.</p>
+  <div class="body">
+    <p>Two tables explain the drop. The first shows what the model leans on. The second shows whether each input is tied to the outcome at each site.</p>
+    <div id="inside"></div>
+    <p><label for="guess"><strong>Which input is the shortcut?</strong> A shortcut predicts the outcome at Site A for a reason that has nothing to do with the task.</label><br>
+    <select id="guess"></select> <button id="check">Check my answer</button></p>
+    <div id="guessMsg"></div>
+  </div>
+</section>
+
+<section class="step locked" id="s5">
+  <h2><span class="num">5</span>Fix what you can afford</h2>
+  <p class="lockmsg">Locked. It opens after you find the shortcut in Step 4.</p>
+  <div class="body">
+    <p>You have <strong>6 effort points</strong>. Choose your fixes, then retrain and retest. Every retest is saved to the run log. Try at least two different sets of fixes.</p>
+    <div class="fix">
+      <fieldset><legend>Leave an input out <span class="pts">1 point each</span></legend><div id="dropBox"></div></fieldset>
+      <fieldset><legend>Add records from Site B</legend>
+        <label><input type="radio" name="loc" value="0" checked> None <span class="pts">0 points</span></label>
+        <label><input type="radio" name="loc" value="100"> 100 local records <span class="pts">2 points</span></label>
+        <label><input type="radio" name="loc" value="300"> 300 local records <span class="pts">4 points</span></label>
+        <label><input type="radio" name="loc" value="600"> 600 local records <span class="pts">6 points</span></label>
+      </fieldset>
+      <fieldset><legend>Human review <span class="pts">2 points</span></legend>
+        <label><input type="checkbox" id="rev"> Send close calls to a person. A close call is a score within 0.12 of the cutoff. Each review has a cost.</label>
+      </fieldset>
+      <fieldset><legend>Cutoff <span class="pts">free</span></legend>
+        <label for="thr">Flag a case when its score is at or above <strong id="thrV">0.50</strong></label>
+        <input type="range" id="thr" min="0.05" max="0.95" step="0.05" value="0.5" style="width:100%">
+        <span class="note">Lower catches more and raises more false alarms.</span>
+      </fieldset>
+    </div>
+    <p class="budget" id="budget"></p>
+    <button id="retest">Retrain and retest at Site B</button>
+    <div id="resFix"></div>
+    <h3>Run log</h3>
+    <div class="scroll"><table id="log"></table></div>
+    <p><button class="alt" id="copyLog">Copy the run log</button> <button class="alt" id="csvLog">Download the run log (CSV)</button> <button class="alt" id="csvB">Download the Site B records (CSV)</button> <span id="copyMsg" class="note"></span></p>
+    <div class="next" id="next5" style="display:none"></div>
+  </div>
+</section>
+
+<section class="step locked" id="s6">
+  <h2><span class="num">6</span>Decide</h2>
+  <p class="lockmsg">Locked. It opens when your run log has 3 runs. Run 1 is saved for you in Step 3, so retest twice in Step 5.</p>
+  <div class="body">
+    <p><label for="finalRun"><strong>Which run is your final setup?</strong></label><br><select id="finalRun"></select></p>
+    <p><strong>What do you recommend?</strong></p>
+    <label style="display:block;font-family:Arial,sans-serif;font-size:16px;margin:4px 0"><input type="radio" name="dec" value="Adopt the model as the vendor delivered it"> Adopt the model as the vendor delivered it</label>
+    <label style="display:block;font-family:Arial,sans-serif;font-size:16px;margin:4px 0"><input type="radio" name="dec" value="Adapt it with the fixes in my final run"> Adapt it with the fixes in my final run</label>
+    <label style="display:block;font-family:Arial,sans-serif;font-size:16px;margin:4px 0"><input type="radio" name="dec" value="Stop. Do not use it at Site B"> Stop. Do not use it at Site B</label>
+    <p style="margin-top:14px"><button id="makeSum">Build my summary</button></p>
+    <div id="sumBox"></div>
+  </div>
+</section>
+
+<footer>
+  <p><strong>What this exercise simplifies.</strong> The records are generated by the page. They are not real people, vehicles, or students. The exercise assumes that acting on a flag prevents the outcome, and that a human reviewer always gets a close call right. Real deployments are messier on both counts.</p>
+</footer>
+</div>
+<script>
+const SETTINGS = {
+  clinic: {
+    name: "Clinic", outcome: "misses the appointment", unit: "patient", flagAction: "a reminder call and a standby patient for the slot",
+    siteA: "a civilian hospital network in a large city", siteB: "a small overseas clinic that serves service members and families",
+    job: "predict which patients will miss an appointment",
+    feats: [
+      {key:"x1", label:"Days between booking and appointment", type:"num", mean:14, sd:8, digits:0},
+      {key:"x2", label:"Missed an appointment in the past year", type:"bin"},
+      {key:"s",  label:"Booked by phone", type:"bin"},
+      {key:"z",  label:"Morning appointment", type:"bin"}],
+    A:{b0:-1.9,w1:0.9,w2:1.1,p2:0.3,ps1:0.80,ps0:0.25,pz:0.5},
+    B:{b0:-1.9,w1:0.9,w2:1.1,p2:0.3,ps1:0.5,ps0:0.5,pz:0.5},
+    cost:{miss:120,fa:45,review:25},
+    story:"At Site A, phone bookings came mostly from one outlying branch with poor bus service. Its patients missed more appointments, so \"Booked by phone\" marked them. At Site B, how a patient books has nothing to do with whether the patient shows up."
+  },
+  maintenance: {
+    name: "Maintenance shop", outcome: "fails within 30 days", unit: "vehicle", flagAction: "pulling the part and replacing it early",
+    siteA: "a large depot in a dry inland climate", siteB: "a small motor pool on the coast",
+    job: "predict which vehicles will have a part failure in the next 30 days",
+    feats: [
+      {key:"x1", label:"Vibration reading", type:"num", mean:40, sd:10, digits:0},
+      {key:"x2", label:"More than 500 hours since overhaul", type:"bin"},
+      {key:"s",  label:"Inspected in Bay 2", type:"bin"},
+      {key:"z",  label:"Repainted in the past year", type:"bin"}],
+    A:{b0:-2.2,w1:1.2,w2:0.5,p2:0.35,ps1:0.75,ps0:0.20,pz:0.4},
+    B:{b0:-2.7,w1:0.3,w2:2.2,p2:0.35,ps1:0.4,ps0:0.4,pz:0.4},
+    cost:{miss:4000,fa:1200,review:500},
+    story:"At Site A, crews sent the vehicles they were worried about to Bay 2. The bay number recorded the crew's suspicion, so it predicted failures. At Site B, bays are assigned by the schedule."
+  },
+  education: {
+    name: "Education office", outcome: "withdraws from the course", unit: "student", flagAction: "a call from an advisor",
+    siteA: "a large stateside campus", siteB: "a small overseas education center that serves working adults",
+    job: "predict which students will withdraw from a course",
+    feats: [
+      {key:"x1", label:"Logins in the first week", type:"num", mean:9, sd:4, digits:0},
+      {key:"x2", label:"Missed the first assignment", type:"bin"},
+      {key:"s",  label:"Registered in the final week", type:"bin"},
+      {key:"z",  label:"Took a course last term", type:"bin"}],
+    A:{b0:-1.1,w1:-1.0,w2:1.2,p2:0.25,ps1:0.80,ps0:0.25,pz:0.6},
+    B:{b0:-2.6,w1:-0.9,w2:1.0,p2:0.25,ps1:0.7,ps0:0.7,pz:0.6},
+    cost:{miss:300,fa:90,review:50},
+    story:"At Site A, students who registered in the final week mostly came off a waitlist, and they withdrew more often. At Site B, most students register late because duty schedules arrive late. Late registration says nothing about who will withdraw."
+  }
+};
+const KEYS = ["x1","x2","s","z"];
+const N = {trainA:800, testA:400, testB:400, poolB:600};
+const BUDGET = 6, BAND = 0.12, LOCAL_WEIGHT = 3;
+const COST_DROP = 1, COST_REVIEW = 2, COST_LOCAL = {0:0,100:2,300:4,600:6};
+
+function hashStr(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function rng(seed){ let a=seed>>>0; return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function normal(r){ let u=0,v=0; while(u===0)u=r(); while(v===0)v=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+const sig = t => 1/(1+Math.exp(-t));
+
+function gen(setting, site, n, r){
+  const p = setting[site], f = setting.feats[0], rows=[];
+  for(let i=0;i<n;i++){
+    const zt = normal(r), x2 = r()<p.p2?1:0;
+    const y = r() < sig(p.b0 + p.w1*zt + p.w2*x2) ? 1:0;
+    const s = r() < (y?p.ps1:p.ps0) ? 1:0;
+    const z = r() < p.pz ? 1:0;
+    let x1 = f.mean + f.sd*zt; if(x1<0) x1=0;
+    rows.push({x1:+x1.toFixed(1), x2, s, z, y});
+  }
+  return rows;
+}
+function makeData(settingKey, name){
+  const setting = SETTINGS[settingKey];
+  const r = rng(hashStr(settingKey+"|"+name.trim().toLowerCase()));
+  return { trainA:gen(setting,"A",N.trainA,r), testA:gen(setting,"A",N.testA,r), testB:gen(setting,"B",N.testB,r), poolB:gen(setting,"B",N.poolB,r) };
+}
+function train(rows, weights, use){
+  const keys = KEYS.filter(k=>use[k]);
+  const mu={}, sd={}; let W=0; weights.forEach(w=>W+=w);
+  keys.forEach(k=>{ let m=0; rows.forEach((d,i)=>m+=weights[i]*d[k]); m/=W; let v=0; rows.forEach((d,i)=>v+=weights[i]*(d[k]-m)**2); mu[k]=m; sd[k]=Math.sqrt(v/W)||1; });
+  let b=0; const w={}; keys.forEach(k=>w[k]=0);
+  for(let it=0; it<400; it++){
+    let gb=0; const g={}; keys.forEach(k=>g[k]=0);
+    rows.forEach((d,i)=>{ let t=b; keys.forEach(k=>t+=w[k]*(d[k]-mu[k])/sd[k]); const e=(sig(t)-d.y)*weights[i]; gb+=e; keys.forEach(k=>g[k]+=e*(d[k]-mu[k])/sd[k]); });
+    b-=0.5*gb/W; keys.forEach(k=>w[k]-=0.5*(g[k]/W+0.001*w[k]));
+  }
+  return {b,w,mu,sd,keys};
+}
+function score(m, d){ let t=m.b; m.keys.forEach(k=>t+=m.w[k]*(d[k]-m.mu[k])/m.sd[k]); return sig(t); }
+function auc(m, rows){
+  const sc = rows.map(d=>({p:score(m,d),y:d.y})).sort((a,b)=>a.p-b.p);
+  let rank=0, pos=0, neg=0, i=0;
+  while(i<sc.length){ let j=i; while(j<sc.length && sc[j].p===sc[i].p) j++; const avg=(i+1+j)/2; for(let k=i;k<j;k++){ if(sc[k].y){rank+=avg;pos++;} else neg++; } i=j; }
+  return (rank - pos*(pos+1)/2)/(pos*neg);
+}
+function evaluate(m, rows, thr, review, cost){
+  let hit=0, miss=0, fa=0, clear=0, rev=0;
+  rows.forEach(d=>{ const p=score(m,d); 
+    if(review && Math.abs(p-thr)<BAND){ rev++; if(d.y) hit++; else clear++; return; }
+    if(p>=thr){ if(d.y) hit++; else fa++; } else { if(d.y) miss++; else clear++; } });
+  const pos=hit+miss;
+  return {hit,miss,fa,clear,rev,pos, n:rows.length, caught: pos? hit/pos:0,
+          cost: miss*cost.miss + fa*cost.fa + rev*cost.review, noTool: pos*cost.miss};
+}
+function link(rows, key, feat){
+  let hi=[], lo=[];
+  if(feat.type==="bin"){ rows.forEach(d=>(d[key]?hi:lo).push(d.y)); }
+  else { const v=rows.map(d=>d[key]).sort((a,b)=>a-b), med=v[Math.floor(v.length/2)]; rows.forEach(d=>(d[key]>med?hi:lo).push(d.y)); }
+  const rate=a=>a.length? a.reduce((x,y)=>x+y,0)/a.length:0;
+  return {hi:rate(hi), lo:rate(lo), diff:rate(hi)-rate(lo)};
+}
+function buildModel(data, cfg){
+  let rows=data.trainA.slice(), w=rows.map(()=>1);
+  if(cfg.local>0){ data.poolB.slice(0,cfg.local).forEach(d=>{rows.push(d); w.push(LOCAL_WEIGHT);}); }
+  return train(rows, w, cfg.use);
+}
+function spend(cfg){ let c=COST_LOCAL[cfg.local]; KEYS.forEach(k=>{ if(!cfg.use[k]) c+=COST_DROP; }); if(cfg.review) c+=COST_REVIEW; return c; }
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const money=n=>"$"+Math.round(n).toLocaleString("en-US");
+const pct=x=>Math.round(x*100)+"%";
+let ST={key:null,name:"",data:null,base:null,runs:[],tries:0,found:false,resA:null,resB:null};
+function S(){return SETTINGS[ST.key];}
+function unlock(id){ $(id).classList.remove("locked"); }
+function nextBox(t){ return '<div class="next"><b>Next</b>'+t+'</div>'; }
+
+// ---------- Step 1
+Object.keys(SETTINGS).forEach(k=>{ const s=SETTINGS[k]; const d=document.createElement("div"); d.className="card"; d.tabIndex=0; d.setAttribute("role","button");
+  d.innerHTML="<strong>"+s.name+"</strong>The model must "+s.job+"."; 
+  const pick=()=>{ if(ST.data) return; ST.key=k; document.querySelectorAll(".card").forEach(c=>c.classList.remove("sel")); d.classList.add("sel"); ready(); };
+  d.onclick=pick; d.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();pick();} }; $("cards").appendChild(d); });
+function ready(){ $("startBtn").disabled=!(ST.key && $("nm").value.trim().length>0); }
+$("nm").oninput=ready;
+$("startBtn").onclick=()=>{
+  ST.name=$("nm").value.trim(); ST.data=makeData(ST.key,ST.name);
+  $("nm").disabled=true; $("startBtn").disabled=true; $("startBtn").textContent="Started";
+  const s=S(), c=s.cost;
+  $("scenario").innerHTML='<h3>Your situation</h3><p>A vendor built a model to '+s.job+'. It was trained at <strong>Site A: '+s.siteA+'</strong>. Your organization wants to use it at <strong>Site B: '+s.siteB+'</strong>. You run the test.</p>'+
+   '<p>When the model flags a '+s.unit+', the staff respond with '+s.flagAction+'.</p>'+
+   '<table><tr><th>What can go wrong</th><th class="n">Cost each</th></tr>'+
+   '<tr><td><strong>Miss.</strong> The '+s.unit+' '+s.outcome+' and the model did not flag it.</td><td class="n">'+money(c.miss)+'</td></tr>'+
+   '<tr><td><strong>False alarm.</strong> The model flagged a '+s.unit+' that was fine.</td><td class="n">'+money(c.fa)+'</td></tr>'+
+   '<tr><td><strong>Review.</strong> A person checks a close call. Used only if you turn it on in Step 5.</td><td class="n">'+money(c.review)+'</td></tr></table>'+
+   '<p>The model uses four inputs: '+s.feats.map(f=>f.label.toLowerCase()).join("; ")+'.</p>'+
+   nextBox('Go to Step 2 and click <strong>Test the model at Site A</strong>.');
+  unlock("s2"); $("s2").scrollIntoView({behavior:"smooth",block:"start"});
+};
+
+function resultPanel(title, a, e, extra){
+  return '<div class="panel"><h3>'+title+'</h3><div class="lab">Sorting score</div><div class="big">'+a.toFixed(2)+'</div><div class="note">0.50 is a coin flip. 1.00 is perfect.</div>'+
+   '<div class="stat"><div><span class="lab">Caught</span><b>'+e.hit+' of '+e.pos+' ('+pct(e.caught)+')</b></div><div><span class="lab">Missed</span><b>'+e.miss+'</b></div>'+
+   '<div><span class="lab">False alarms</span><b>'+e.fa+'</b></div><div><span class="lab">Sent to review</span><b>'+e.rev+'</b></div>'+
+   '<div><span class="lab">Cost this month</span><b>'+money(e.cost)+'</b></div><div><span class="lab">Cost with no tool</span><b>'+money(e.noTool)+'</b></div></div>'+
+   '<p class="note" style="margin:10px 0 0">'+saving(e)+(extra||"")+'</p></div>';
+}
+function saving(e){ const d=1-e.cost/e.noTool; return d>=0 ? "The tool cuts cost by <strong>"+pct(d)+"</strong> compared with no tool." : "The tool costs <strong>"+pct(-d)+" more</strong> than having no tool."; }
+const ALL=()=>({x1:1,x2:1,s:1,z:1});
+
+// ---------- Step 2
+$("testA").onclick=()=>{
+  ST.base=buildModel(ST.data,{use:ALL(),local:0});
+  const a=auc(ST.base,ST.data.testA), e=evaluate(ST.base,ST.data.testA,0.5,false,S().cost); ST.resA={a,e};
+  $("resA").innerHTML='<div style="margin-top:14px">'+resultPanel("Site A, 400 records, cutoff 0.50",a,e)+'</div>'+
+    '<p>This is a lab test. The model is being scored on the same kind of records it learned from.</p>'+nextBox('Go to Step 3 and click <strong>Move the model to Site B</strong>.');
+  $("testA").disabled=true; unlock("s3");
+};
+
+// ---------- Step 3
+$("testB").onclick=()=>{
+  const cfg={use:ALL(),local:0,review:false,thr:0.5};
+  const a=auc(ST.base,ST.data.testB), e=evaluate(ST.base,ST.data.testB,0.5,false,S().cost); ST.resB={a,e};
+  $("resB").innerHTML='<div class="two" style="margin-top:14px">'+resultPanel("Site A",ST.resA.a,ST.resA.e)+resultPanel("Site B, same model",a,e)+'</div>'+
+    '<p>The sorting score went from <strong>'+ST.resA.a.toFixed(2)+'</strong> at Site A to <strong>'+a.toFixed(2)+'</strong> at Site B. Nothing in the model changed. This run is saved as Run 1 in your log.</p>'+
+    nextBox('Go to Step 4. Read both tables, then answer the question under them.');
+  addRun(cfg,ST.base,"Vendor model, no changes");
+  $("testB").disabled=true; buildInside(); unlock("s4");
+};
+
+// ---------- Step 4
+function buildInside(){
+  const s=S(), m=ST.base, mx=Math.max(...KEYS.map(k=>Math.abs(m.w[k])));
+  let t1='<h3>What the model leans on</h3><table><tr><th>Input</th><th>Weight in the model</th></tr>';
+  KEYS.map((k,i)=>({k,f:s.feats[i]})).sort((p,q)=>Math.abs(m.w[q.k])-Math.abs(m.w[p.k])).forEach(o=>{ const w=Math.abs(m.w[o.k]);
+    t1+='<tr><td>'+o.f.label+'</td><td><span class="bar" style="width:'+Math.max(2,Math.round(w/mx*220))+'px"></span> '+w.toFixed(2)+'</td></tr>'; });
+  t1+='</table><p class="note">A longer bar means the model depends on that input more.</p>';
+  const rate=r=>r.reduce((x,d)=>x+d.y,0)/r.length;
+  let t2='<h3>How strongly each input is tied to the outcome</h3><table><tr><th>Input</th><th class="n">Site A</th><th class="n">Site B</th></tr>';
+  KEYS.forEach((k,i)=>{ const f=s.feats[i], la=link(ST.data.testA,k,f), lb=link(ST.data.testB,k,f);
+    const fmt=l=>(l.diff>=0?"+":"")+Math.round(l.diff*100)+" points";
+    t2+='<tr><td>'+f.label+'</td><td class="n">'+fmt(la)+'</td><td class="n">'+fmt(lb)+'</td></tr>'; });
+  t2+='<tr><td><strong>Share of all cases where the '+s.unit+' '+s.outcome+'</strong></td><td class="n"><strong>'+pct(rate(ST.data.testA))+'</strong></td><td class="n"><strong>'+pct(rate(ST.data.testB))+'</strong></td></tr></table>';
+  t2+='<p class="note">How to read it: "+20 points" means the outcome is 20 percentage points more common when the input is yes (or above the middle value) than when it is no (or below). Near zero means the input tells you nothing at that site.</p>';
+  $("inside").innerHTML=t1+t2;
+  $("guess").innerHTML='<option value="">Choose one</option>'+KEYS.map((k,i)=>'<option value="'+k+'">'+s.feats[i].label+'</option>').join("");
+  $("dropBox").innerHTML=KEYS.map((k,i)=>'<label><input type="checkbox" class="drop" value="'+k+'"> '+s.feats[i].label+'</label>').join("");
+  document.querySelectorAll(".drop,input[name=loc],#rev").forEach(el=>el.onchange=showBudget); showBudget();
+}
+$("check").onclick=()=>{
+  const g=$("guess").value; if(!g||ST.found) return; ST.tries++;
+  if(g==="s"){ ST.found=true; $("guess").disabled=true; $("check").disabled=true;
+    $("guessMsg").innerHTML='<div class="msg ok"><strong>Correct.</strong> '+S().story+'</div>'+nextBox('Go to Step 5. Choose fixes, then click <strong>Retrain and retest at Site B</strong>.'); unlock("s5"); }
+  else $("guessMsg").innerHTML='<div class="msg no"><strong>Not that one.</strong> Look for an input with a strong tie to the outcome at Site A and almost none at Site B. Choose again and click Check my answer.</div>';
+};
+
+// ---------- Step 5
+function readCfg(){ const use=ALL(); document.querySelectorAll(".drop").forEach(c=>{ if(c.checked) use[c.value]=0; });
+  return {use, local:+document.querySelector("input[name=loc]:checked").value, review:$("rev").checked, thr:+$("thr").value}; }
+function showBudget(){ const c=readCfg(), used=spend(c), none=KEYS.every(k=>!c.use[k]);
+  $("budget").className="budget"+(used>BUDGET?" over":"");
+  $("budget").textContent="Effort points used: "+used+" of "+BUDGET+(used>BUDGET?". You are over budget. Remove a fix.":".")+(none?" Keep at least one input in the model.":"");
+  $("retest").disabled=used>BUDGET||none; }
+$("thr").oninput=()=>{ $("thrV").textContent=(+$("thr").value).toFixed(2); };
+function describe(c){ const s=S(), parts=[]; const dropped=KEYS.map((k,i)=>c.use[k]?null:s.feats[i].label).filter(Boolean);
+  if(dropped.length) parts.push("Left out: "+dropped.join(", ")); if(c.local) parts.push(c.local+" local records"); if(c.review) parts.push("Human review");
+  return parts.length?parts.join("; "):"Vendor model, no changes"; }
+function addRun(c,m,desc){ const a=auc(m,ST.data.testB), e=evaluate(m,ST.data.testB,c.thr,c.review,S().cost);
+  ST.runs.push({n:ST.runs.length+1,desc:desc||describe(c),pts:spend(c),thr:c.thr,a,e}); drawLog(); return {a,e}; }
+$("retest").onclick=()=>{ const c=readCfg(), m=buildModel(ST.data,c), r=addRun(c,m), b=ST.runs[0];
+  const d=r.e.cost-b.e.cost;
+  $("resFix").innerHTML='<div style="margin-top:14px">'+resultPanel("Run "+ST.runs.length+" at Site B: "+describe(c)+", cutoff "+c.thr.toFixed(2),r.a,r.e,
+    " Compared with Run 1, this setup "+(d<0?"saves "+money(-d):d>0?"costs "+money(d)+" more":"costs the same")+" this month.")+'</div>';
+  if(ST.runs.length>=3){ $("next5").style.display="block"; $("next5").innerHTML='<b>Next</b>You have '+ST.runs.length+' runs. Keep testing if you want a better setup. When you are done, go to Step 6.'; unlock("s6"); fillFinal(); }
+  else { $("next5").style.display="block"; $("next5").innerHTML='<b>Next</b>Change your fixes and click <strong>Retrain and retest at Site B</strong> again. You have '+ST.runs.length+' of the 3 runs you need. Step 6 opens after one more retest.'; }
+};
+const COLS=["Run","Fixes","Points","Cutoff","Sorting score","Caught","Missed","False alarms","Reviewed","Cost this month","Compared with no tool"];
+function rowVals(r){ const d=1-r.e.cost/r.e.noTool; return [r.n,r.desc,r.pts,r.thr.toFixed(2),r.a.toFixed(2),r.e.hit+" of "+r.e.pos,r.e.miss,r.e.fa,r.e.rev,money(r.e.cost),(d>=0?pct(d)+" lower":pct(-d)+" higher")]; }
+function drawLog(){ $("log").innerHTML='<tr>'+COLS.map((c,i)=>'<th'+(i>1?' class="n"':'')+'>'+c+'</th>').join("")+'</tr>'+ST.runs.map(r=>'<tr>'+rowVals(r).map((v,i)=>'<td'+(i>1?' class="n"':'')+'>'+v+'</td>').join("")+'</tr>').join(""); fillFinal(); }
+function logText(sep){ return [COLS].concat(ST.runs.map(rowVals)).map(r=>r.map(v=>sep===","?'"'+String(v).replace(/"/g,'""')+'"':v).join(sep)).join("\n"); }
+function download(name,text){ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type:"text/csv"})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+function copyText(t,el){ const done=()=>{el.textContent="Copied.";setTimeout(()=>el.textContent="",2500);};
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,()=>fallback(t,done)); else fallback(t,done); }
+function fallback(t,done){ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy");done();}catch(e){} ta.remove(); }
+$("copyLog").onclick=()=>copyText(logText("\t"),$("copyMsg"));
+$("csvLog").onclick=()=>download("transfer-test-run-log.csv",logText(","));
+$("csvB").onclick=()=>{ const s=S(); const head=s.feats.map(f=>'"'+f.label+'"').concat('"Outcome: '+s.outcome+'"').join(",");
+  download("site-b-records.csv",[head].concat(ST.data.testB.map(d=>[d.x1,d.x2,d.s,d.z,d.y].join(","))).join("\n")); };
+
+// ---------- Step 6
+function fillFinal(){ const cur=$("finalRun").value; $("finalRun").innerHTML=ST.runs.map(r=>'<option value="'+r.n+'">Run '+r.n+': '+r.desc+', cutoff '+r.thr.toFixed(2)+'</option>').join(""); if(cur) $("finalRun").value=cur; }
+$("makeSum").onclick=()=>{
+  const dec=document.querySelector("input[name=dec]:checked"); if(!dec){ $("sumBox").innerHTML='<div class="msg no">Choose a recommendation first, then click Build my summary.</div>'; return; }
+  const s=S(), f=ST.runs[+$("finalRun").value-1], b=ST.runs[0], A=ST.resA;
+  const line=(lab,a,e)=>lab+": sorting score "+a.toFixed(2)+", caught "+e.hit+" of "+e.pos+", missed "+e.miss+", false alarms "+e.fa+", reviewed "+e.rev+", cost "+money(e.cost)+" (no tool: "+money(e.noTool)+")";
+  const txt=["THE TRANSFER TEST: SUMMARY","Name: "+ST.name,"Date: "+new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}),"Setting: "+s.name,
+   "Site A: "+s.siteA,"Site B: "+s.siteB,"",line("Site A, vendor model, cutoff 0.50",A.a,A.e),line("Site B, vendor model, cutoff 0.50 (Run 1)",b.a,b.e),"",
+   "Shortcut input: "+s.feats[2].label+" (found on try "+ST.tries+")","Runs in log: "+ST.runs.length,"",
+   "Final setup: Run "+f.n+". "+f.desc+". Cutoff "+f.thr.toFixed(2)+". Effort points: "+f.pts+" of "+BUDGET+".",line("Site B, final setup",f.a,f.e),"","Recommendation: "+dec.value+"."].join("\n");
+  $("sumBox").innerHTML='<pre id="sumTxt"></pre><p><button class="alt" id="copySum">Copy the summary</button> <span id="sumMsg" class="note"></span></p>'+nextBox('Paste this summary and your run log into your memo. Then write the memo.');
+  $("sumTxt").textContent=txt; $("copySum").onclick=()=>copyText(txt,$("sumMsg"));
+};
+</script>
+</body>
+</html>
